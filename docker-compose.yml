@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  frontend:
+    platform: linux/amd64
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:5001
+      - NODE_OPTIONS=--openssl-legacy-provider
+
+  backend:
+    platform: linux/amd64  # 必要に応じて追加
+    build:
+      context: ./backend
+    ports:
+      - "5001:5000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/
+    volumes:
+      - ./backend:/app

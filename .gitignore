@@ -1,0 +1,18 @@
+.env
+# Node modules
+node_modules/
+
+backend/speechtotext-440503-44ea1f8a5734.json
+
+# Environment files
+.env
+
+# Python virtual environment
+venv/
+
+# Cache and logs
+__pycache__/
+*.log
+
+# Docker generated files
+docker-compose.override.yml
