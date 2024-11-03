@@ -1,0 +1,22 @@
+# Node.jsの依存関係
+frontend/node_modules
+node_modules
+
+# Pythonのキャッシュファイル
+__pycache__/
+*.pyc
+*.pyo
+
+# Dockerやビルドに不要なファイル
+*.log
+*.md
+*.json
+docker-compose.yml
+create_structure.py
+
+# 出力フォルダ
+backend/output
+
+# その他の不要ファイル
+.DS_Store
+.env
