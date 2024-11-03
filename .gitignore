@@ -4,7 +4,8 @@ node_modules/
 frontend/node_modules/
 
 backend/speechtotext-440503-44ea1f8a5734.json
-
+backend/output/chunked_audio_file
+backend/audio_files
 # Environment files
 .env
 
