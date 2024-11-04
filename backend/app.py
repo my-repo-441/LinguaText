@@ -4,6 +4,14 @@ from flask_cors import CORS
 from flask_cors import cross_origin
 from pydub import AudioSegment
 from google.cloud import speech_v1p1beta1 as speech
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv() 
+
+client = OpenAI()
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Google Cloud認証情報ファイルのパスを環境変数に設定
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/speechtotext-440503-44ea1f8a5734.json"
@@ -80,6 +88,60 @@ def transcribe():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/translate', methods=['POST'])
+def translate_text():
+    data = request.get_json()
+    if 'text' not in data:
+        return jsonify({"error": "Text is required"}), 400
+
+    try:
+        translated_text = translate_text_to_japanese(data['text'])
+        return jsonify({"translation": translated_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def translate_text_to_japanese(text):
+    messages = [
+        {"role": "system", "content": "あなたは優秀な翻訳家です。次の文章を日本語に翻訳して。"},
+        {"role": "user", "content": f"文章：{text}"}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=5000
+    )
+    translated_text = response.choices[0].message.content.strip()
+
+    return translated_text
+
+@app.route('/summarize', methods=['POST'])
+def summarize_text():
+    data = request.get_json()
+    if 'text' not in data:
+        return jsonify({"error": "Text is required"}), 400
+
+    try:
+        summary = summarize_translated_text(data['text'])
+        return jsonify({"summary": summary})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def summarize_translated_text(text):
+    messages = [
+        {"role": "system", "content": "あなたは優秀な要約者です。次の文章を要約してください。"},
+        {"role": "user", "content": f"文章：{text}"}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=1000
+    )
+    summary = response.choices[0].message.content.strip()
+
+    return summary
 
 @app.errorhandler(500)
 def internal_error(error):
