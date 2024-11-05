@@ -3,6 +3,7 @@ import "./index.css";
 import axios from 'axios';
 
 function App() {
+  const [activeContentIndex, setActiveContentIndex] = useState(0);
   const [transcription, setTranscription] = useState('');
   const [translation, setTranslation] = useState('');
   const [summary, setSummary] = useState('');
@@ -68,29 +69,58 @@ function App() {
 
   return (
     <div>
-      <h1>Hello, LinguaText!</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleTranscription} disabled={loading}>
-        {loading ? 'Processing...' : '文字起こし'}
-      </button>
-      <button onClick={handleTranslation} disabled={!transcription || loading}>
-        {loading ? 'Processing...' : '翻訳'}
-      </button>
-      <button onClick={handleSummary} disabled={!translation || loading}>
-        {loading ? 'Processing...' : '要約'}
-      </button>
+      <header>
+        <div>
+          <h1>Hello, LinguaText!</h1>
+        </div>
+      </header>
 
-      <div>
-        <h2>文字起こし:</h2>
-        <p>{transcription}</p>
-      </div>
-      <div>
-        <h2>翻訳:</h2>
-        <p>{translation}</p>
-      </div>
-      <div>
-        <h2>要約:</h2>
-        <p>{summary}</p>
+      <div id="tabs">
+        <input type="file" onChange={handleFileChange} />
+        <menu>
+          <button 
+          className={activeContentIndex === 0 ? "active" : ""}
+          onClick={() => {
+            handleTranscription();
+            setActiveContentIndex(0);
+          }}
+            disabled={loading}
+          >
+          {loading ? 'Processing...' : '文字起こし'}
+          </button>
+          <button
+            className={activeContentIndex === 1 ? "active" : ""}
+            onClick={() => {
+              handleTranslation();
+              setActiveContentIndex(1);
+            }}
+            disabled={!transcription || loading}
+          >
+            {loading ? 'Processing...' : '翻訳'}
+          </button>
+          <button
+            className={activeContentIndex === 2 ? "active" : ""}
+            onClick={() => {
+              handleSummary();
+              setActiveContentIndex(2);
+            }} 
+            disabled={!translation || loading}
+          >
+            {loading ? 'Processing...' : '要約'}
+          </button>
+        </menu>
+        <div id="tab-content">
+          <h2>文字起こし:</h2>
+          <p>{transcription}</p>
+        {/* </div>
+        <div> */}
+          <h2>翻訳:</h2>
+          <p>{translation}</p>
+        {/* </div>
+        <div> */}
+          <h2>要約:</h2>
+          <p>{summary}</p>
+        </div>
       </div>
     </div>
   );

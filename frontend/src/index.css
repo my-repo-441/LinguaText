@@ -32,7 +32,8 @@ header p {
 }
 
 #tabs {
-  max-width: 32rem;
+  /* max-width: 32rem; */
+  max-width: 100%; /* 必要に応じて最大幅を調整 */
   margin: 2rem 0;
   overflow: hidden;
 }
@@ -67,6 +68,8 @@ header p {
   background-color: #2d3942;
   border-radius: 0 4px 4px 4px;
   padding: 1rem;
+  max-width: 100%; /* 必要に応じて最大幅を調整 */
+  box-sizing: border-box; /* paddingがwidthに含まれるように設定 */
 }
 
 #tab-content li {
