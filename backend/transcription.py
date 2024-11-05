@@ -3,7 +3,7 @@ from pydub import AudioSegment
 from google.cloud import speech_v1p1beta1 as speech
 
 # Google Cloud認証情報ファイルのパスを環境変数に設定
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/keisuke/Documents/Python/LinguaText/backend/speechtotext-440503-44ea1f8a5734.json"
+os.environ["2GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/keisuke/Documents/Python/LinguaText/backend/speechtotext-440503-44ea1f8a5734.json"
 
 def split_audio(file_path, chunk_length_ms):
     audio = AudioSegment.from_mp3(file_path)
