@@ -1,24 +1,24 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_cors import cross_origin
 from pydub import AudioSegment
-from google.cloud import speech_v1p1beta1 as speech
+from google.cloud.speech_v2 import SpeechClient
+from google.cloud.speech_v2.types import cloud_speech
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv() 
+load_dotenv()
 
 client = OpenAI()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
 
 # Google Cloud認証情報ファイルのパスを環境変数に設定
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/speechtotext-440503-44ea1f8a5734.json"
 
 app = Flask(__name__)
-# CORSを有効化してすべてのオリジンを許可
-CORS(app, supports_credentials=True)  # すべてのオリジンを許可
+CORS(app, supports_credentials=True)
 
 def split_audio(file_path, chunk_length_ms):
     audio = AudioSegment.from_mp3(file_path)
@@ -26,40 +26,44 @@ def split_audio(file_path, chunk_length_ms):
     return chunks
 
 def mp3_to_text(file_path):
-    # 出力ディレクトリを指定し、存在しない場合は作成
     output_dir = "/app/output/chunked_audio_file"
     os.makedirs(output_dir, exist_ok=True)
 
     # 音声ファイルを55秒（55000ms）ごとに分割
     chunks = split_audio(file_path, 55000)
 
-    # Google Speech-to-Text クライアントの初期化
-    client = speech.SpeechClient()
+    # Google Speech-to-Text v2 クライアントの初期化
+    client = SpeechClient()
 
     full_transcript = ""
     for i, chunk in enumerate(chunks):
         # チャンクをモノラルに変換し、WAV形式で保存
-        chunk = chunk.set_channels(1)  # モノラルに変換
+        chunk = chunk.set_channels(1)
         wav_path = f"{output_dir}/chunk_{i}.wav"
         chunk.export(wav_path, format="wav", parameters=["-ar", "16000"]) 
 
         # 音声データの読み込み
         with open(wav_path, "rb") as audio_file:
-            content = audio_file.read()
+            audio_content = audio_file.read()
 
-        # リクエスト用のオーディオ設定
-        audio = speech.RecognitionAudio(content=content)
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=16000,
-            language_code="en-US"
+        # 設定を作成
+        config = cloud_speech.RecognitionConfig(
+            auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
+            language_codes=["en-US"],
+            model="long",
         )
-        
+
+        # 認識リクエストを作成
+        request = cloud_speech.RecognizeRequest(
+            recognizer=f"projects/{PROJECT_ID}/locations/global/recognizers/_",
+            config=config,
+            content=audio_content,
+        )
+
         # 音声データの認識
         try:
-            operation = client.long_running_recognize(config=config, audio=audio)
-            print(f"Chunk {i}: Waiting for operation to complete...")
-            response = operation.result(timeout=1000)
+            response = client.recognize(request=request)
+            print(f"Chunk {i}: Recognition complete.")
 
             # 認識結果を収集
             for result in response.results:
@@ -67,7 +71,13 @@ def mp3_to_text(file_path):
         except Exception as e:
             print(f"チャンク {i} の認識中にエラーが発生しました: {e}")
     
+    # transcript をテキストファイルに保存
+    output_file_path = "/app/output/transcript_output.txt"
+    with open(output_file_path, "w") as output_file:
+        output_file.write(full_transcript)
+
     return full_transcript
+
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
@@ -88,6 +98,7 @@ def transcribe():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 翻訳と要約の関数はそのままです
 @app.route('/translate', methods=['POST'])
 def translate_text():
     data = request.get_json()
@@ -127,7 +138,6 @@ def summarize_text():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 def summarize_translated_text(text):
     messages = [
         {"role": "system", "content": "あなたは優秀な要約者です。次の文章を要約してください。"},
@@ -147,7 +157,6 @@ def summarize_translated_text(text):
 def internal_error(error):
     print(f"Internal server error: {error}")
     return jsonify({"error": "Internal server error"}), 500
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
