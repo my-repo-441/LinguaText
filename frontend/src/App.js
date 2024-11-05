@@ -76,9 +76,8 @@ function App() {
       </header>
 
       <div id="tabs">
-        {/* <input type="file" onChange={handleFileChange} /> */}
+        <input type="file" onChange={handleFileChange} />
         <menu>
-          <input type="file" onChange={handleFileChange} />
           <button 
           className={activeContentIndex === 0 ? "active" : ""}
           onClick={() => {
