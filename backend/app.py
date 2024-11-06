@@ -15,7 +15,7 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
 
 # Google Cloud認証情報ファイルのパスを環境変数に設定
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/speechtotext-440503-44ea1f8a5734.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/your-json-file"
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)

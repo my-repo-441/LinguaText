@@ -32,8 +32,8 @@ header p {
 }
 
 #tabs {
-  /* max-width: 32rem; */
-  max-width: 100%; /* 必要に応じて最大幅を調整 */
+  max-width: 32rem;
+  /* max-width: 100%;  */
   margin: 2rem 0;
   overflow: hidden;
 }
