@@ -15,32 +15,39 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
 
 # Google Cloud認証情報ファイルのパスを環境変数に設定
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/your-json-file"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/app/speechtotext-440503-44ea1f8a5734.json"
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
+
 def split_audio(file_path, chunk_length_ms):
     audio = AudioSegment.from_mp3(file_path)
-    chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
+    chunks = [audio[i:i + chunk_length_ms]
+              for i in range(0, len(audio), chunk_length_ms)]
     return chunks
+
 
 def mp3_to_text(file_path):
     output_dir = "/app/output/chunked_audio_file"
+    response_dir = "/app/output/chunk_responses"
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(response_dir, exist_ok=True)
 
-    # 音声ファイルを55秒（55000ms）ごとに分割
-    chunks = split_audio(file_path, 55000)
+    # 音声ファイルを60秒（60000ms）ごとに分割
+    chunks = split_audio(file_path, 60000)
 
     # Google Speech-to-Text v2 クライアントの初期化
     client = SpeechClient()
 
     full_transcript = ""
     for i, chunk in enumerate(chunks):
+
         # チャンクをモノラルに変換し、WAV形式で保存
         chunk = chunk.set_channels(1)
         wav_path = f"{output_dir}/chunk_{i}.wav"
-        chunk.export(wav_path, format="wav", parameters=["-ar", "16000"]) 
+        chunk.export(wav_path, format="wav", parameters=[
+                     "-ar", "16000", "-ab", "128k"])
 
         # 音声データの読み込み
         with open(wav_path, "rb") as audio_file:
@@ -63,15 +70,28 @@ def mp3_to_text(file_path):
         # 音声データの認識
         try:
             response = client.recognize(request=request)
-            print(f"Chunk {i}: Recognition complete.")
+            print(f"Chunk {i}: Recognition complete. Response: {response}")
 
-            # 認識結果を収集
-            for result in response.results:
-                full_transcript += result.alternatives[0].transcript + " "
+            # チャンクの認識結果をテキストに変換
+            chunk_transcript = ""
+            if response.results:
+                for result in response.results:
+                    chunk_transcript += result.alternatives[0].transcript + " "
+            else:
+                print(f"チャンク {i} の認識結果がありません")
+
+            response_path = f"{response_dir}/response_{i}.txt"
+
+            # チャンクの認識結果をレスポンスファイルに保存
+            with open(response_path, "w") as response_file:
+                response_file.write(chunk_transcript)
+
+            # フルテキストに追加
+            full_transcript += chunk_transcript
         except Exception as e:
             print(f"チャンク {i} の認識中にエラーが発生しました: {e}")
-    
-    # transcript をテキストファイルに保存
+
+    # フルテキストをテキストファイルに保存
     output_file_path = "/app/output/transcript_output.txt"
     with open(output_file_path, "w") as output_file:
         output_file.write(full_transcript)
@@ -99,6 +119,8 @@ def transcribe():
         return jsonify({"error": str(e)}), 500
 
 # 翻訳と要約の関数はそのままです
+
+
 @app.route('/translate', methods=['POST'])
 def translate_text():
     data = request.get_json()
@@ -110,6 +132,7 @@ def translate_text():
         return jsonify({"translation": translated_text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 def translate_text_to_japanese(text):
     messages = [
@@ -126,6 +149,7 @@ def translate_text_to_japanese(text):
 
     return translated_text
 
+
 @app.route('/summarize', methods=['POST'])
 def summarize_text():
     data = request.get_json()
@@ -137,6 +161,7 @@ def summarize_text():
         return jsonify({"summary": summary})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 def summarize_translated_text(text):
     messages = [
@@ -153,10 +178,12 @@ def summarize_translated_text(text):
 
     return summary
 
+
 @app.errorhandler(500)
 def internal_error(error):
     print(f"Internal server error: {error}")
     return jsonify({"error": "Internal server error"}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
