@@ -1,0 +1,5 @@
+__pycache__/
+*.log
+audio_files/
+output/
+speechtotext-*.json
