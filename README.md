@@ -70,15 +70,19 @@ docker-compose up
 
 1. **音声ファイルのアップロード**
    - フロントエンドのフォームから音声ファイルを選択します。
+   ![Web](./docs/screenshots/home.png)
 
 2. **文字起こし**
    - 「文字起こし」ボタンをクリックして、アップロードした音声ファイルの文字起こしを実行します。
+   ![transcribe](./docs/screenshots/transcribe.png)
 
 3. **翻訳**
    - 文字起こしが完了すると「翻訳」ボタンが有効になります。クリックして日本語に翻訳します。
+   ![translate](./docs/screenshots/translate.png)
 
 4. **要約**
    - 翻訳が完了すると「要約」ボタンが有効になります。クリックして翻訳結果を要約します。
+   ![summary](./docs/screenshots/summary.png)
 
 ---
 
