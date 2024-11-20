@@ -18,3 +18,5 @@ __pycache__/
 
 # Docker generated files
 docker-compose.override.yml
+
+docs
