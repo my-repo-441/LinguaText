@@ -124,7 +124,8 @@ docker-compose up
   ```
 
 - ## pythonのライブラリを追加するとき
-  ```source ~/venv/speech-to-text/bin/activate
+  ```
+  source ~/venv/speech-to-text/bin/activate
   pip install <ライブラリ名>
   pip freeze > ./backend/requirements.txt
   ```
