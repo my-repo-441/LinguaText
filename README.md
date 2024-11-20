@@ -31,10 +31,9 @@ LinguaTextは、音声ファイルの文字起こし、翻訳、要約を行うW
 
 ## 💻 必要な環境
 
-- **Docker**: バージョン20.x以上推奨
+- **Docker**: 
 - **Docker Compose**
 - **Google Cloud Speech-to-Text API認証情報**
-  - ファイル名: `speechtotext-440503-44ea1f8a5734.json`
 
 ---
 
