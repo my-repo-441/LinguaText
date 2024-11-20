@@ -50,8 +50,8 @@ LinguaTextは、音声ファイルの文字起こし、翻訳、要約を行うW
 
 ### **1. リポジトリのクローン**
 ```bash
-git clone https://github.com/yourusername/linguatext.git
-cd linguatext
+git clone https://github.com/my-repo-441/LinguaText.git
+cd LinguaText
 ```
 
 ### **2. Docker Composeによるビルドと起動**
